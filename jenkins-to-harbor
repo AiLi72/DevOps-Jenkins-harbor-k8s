@@ -1,0 +1,28 @@
+#Jenkins Server : after compiling the code, builds a new version image and push this new image to harbor registry
+
+#Variables
+JENKINS_WAR_HOME='/var/lib/jenkins/workspace/Maven-Docker/target'
+DOCKERFILE_HOME='/var/lib/jenkins/docker-file/Maven-Docker_war'
+HARBOR_IP='192.168.1.147'
+REPOSITORIES='jenkins/maven-docker'
+HARBOR_USER='aili'
+HARBOR_USER_PASSWD='Harbor12345'
+HARBOR_EMAIL='a.li@defacto.aero'
+
+#Copy the newest car to dockerfile directory
+\cp -f ${JENKINS_WAR_HOME}/Maven-Docker.war ${DOCKERFILE_HOME}/Maven-Docker.war
+
+#Delete the earier version image
+sudo docker login -u ${HARBOR_USER} -p ${HARBOR_USER_PASSWD} ${HARBOR_IP}
+IMAGE_ID='sudo docker images | grep ${REPOSITORIES} | awk '${print $3}''
+if [ -n "${IMAGR_ID}" ];then
+sudo docker rmi ${IMAGR_ID}
+fi
+
+#build image
+cd ${DOCKERFILE_HOME}
+TAG='date +%Y%m%d-%H%M%S'
+sudo docker build -t ${HARBOR_IP}/${REPOSITORIES}:${TAG} . &>/dev/null
+
+#push the new image to harbor registry
+sudo docker push ${HARBOR_IP}/${REPOSITORIES}:${TAG} &>/dev/null
