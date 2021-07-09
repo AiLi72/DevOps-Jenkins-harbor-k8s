@@ -1,0 +1,28 @@
+#pull the image and release/publish the image from harbor in k8s
+HARBOR_IP='192.168.1.147'
+REPOSITORIES='jenkins/maven-docker'
+HARBOR_USER='aili'
+HARBOR_USER_PASSWD='Harbor12345'
+
+#login harbor registry
+sudo docker login -u ${HARBOR_USER} -p ${HARBOR_USER_PASSWD} ${HARBOR_IP}
+
+#Stop the container and delete de container
+CONTAINER_ID='sudo docker ps | grep ${REPOSITORIES} | awk '${print $1}''
+if [ -n "${CONTAINER_ID}" ];then
+  sudo docker stop ${CONTAINER_ID}
+  sudo docker rm ${CONTAINER_ID}
+else # if the container fails to start, we should run docker ps -a to find it
+CONTAINER_ID='sudo docker ps -a | grep ${REPOSITORIES} | awk '${print $1}''
+ if [ -n "${CONTAINER_ID}" ];then
+    sudo docker rm ${CONTAINER_ID}
+ fi
+fi
+
+#delete the earier version image
+IMAGE_ID='sudo docker images | grep ${REPOSITORIES} | awk '${print $3}''
+if [ -n "${IMAGR_ID}" ];then
+sudo docker rmi ${IMAGR_ID}
+fi
+
+#pull the new image from the harbor
